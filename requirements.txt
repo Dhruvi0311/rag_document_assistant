@@ -12,3 +12,10 @@ huggingface-hub
 requests
 python-dotenv
 tiktoken
+
+pdfplumber
+python-docx
+pandas
+openpyxl
+python-pptx
+beautifulsoup4
