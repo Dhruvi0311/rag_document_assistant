@@ -118,3 +118,64 @@
 * AI Agents and ReAct Framework
 * LangGraph Fundamentals
 * Building Agentic AI workflows and multi-step reasoning systems
+
+# Day 4: LangChain Agentic AI Fundamentals
+
+### What I learned
+
+* Memory Systems in LangChain
+
+  * Buffer Memory
+  * Summary Memory
+  * Vector Memory
+  * Embeddings and Vector Databases
+  * Similarity Search and Context Management
+* Tool Calling and Function Calling
+
+  * Tool execution workflow
+  * External APIs and custom tool integration
+* Custom Tools in LangChain
+
+  * Building domain-specific tools for AI applications
+* AI Agents
+
+  * Agent architecture (LLM + Memory + Tools + Planning)
+  * Agentic loops and autonomous decision-making
+* ReAct Framework
+
+  * Thought → Action → Observation cycle
+  * Reasoning and tool usage patterns
+* Retrieval-Augmented Generation (RAG)
+
+  * Chunking, Embeddings, Retrieval, and Generation pipeline
+* LangGraph Fundamentals
+
+  * Nodes, Edges, StateGraph
+  * Stateful workflows and shared state management
+  * Conditional routing and cyclic workflows
+* Advanced LangGraph Concepts
+
+  * Persistence Layer and Checkpointers
+  * Human-in-the-Loop (HITL)
+  * Time Travel Debugging
+  * Fault Tolerance, Retries, Timeouts, Error Handling
+  * Multi-Agent Collaboration and Orchestration
+
+### What I implemented
+
+* Explored the architecture and workflow design of Agentic AI systems.
+* Studied how LangChain and LangGraph can be used to build production-ready AI applications.
+* Analyzed the end-to-end flow of RAG-based and agent-based systems.
+
+### Issues faced
+
+* Understanding the transition from simple LangChain chains to stateful LangGraph workflows.
+* Grasping advanced concepts such as persistence, checkpointers, and multi-agent orchestration.
+
+### Tomorrow's plan
+
+* Learn LangGraph implementation with code examples.
+* Build a basic LangGraph workflow with nodes, edges, and shared state.
+* Explore LangChain Agents, AgentExecutor, and Tool integration practically.
+* Integrate learned concepts into the RAG Document Assistant project.
+
