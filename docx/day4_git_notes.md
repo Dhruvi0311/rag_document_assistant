@@ -22,15 +22,15 @@
 * Reduces hallucinations.
 * Used for weather, search, databases, calculators, etc.
 
----
+---     
 
-## Custom Tools
+## Custom Tools   
 
 * User-defined functions accessible by agents.
 * Examples:
 
   * Resume Parser
-  * Skill Extractor
+  * Skill Extractor         
   * Job Search Tool
   * Course Recommendation Tool
 
@@ -40,7 +40,7 @@
 
 * LLM + Memory + Tools + Planning.
 * Can reason, choose tools, observe results, and make decisions.
-* Agent Loop:
+* Agent Loop:   
 
   ```text
   Think → Act → Observe → Repeat
@@ -48,10 +48,10 @@
 
 ---
 
-## ReAct Framework
+## ReAct Framework   
 
 * **ReAct = Reason + Act**
-* Pattern:
+* Pattern: 
 
   ```text
   Thought → Action → Observation
@@ -67,7 +67,7 @@
 
   ```text
   Documents → Chunking → Embeddings
-            → Vector DB → Retrieval → LLM
+            → Vector DB → Retrieval → LLM 
   ```
 * Key Terms:
 
@@ -104,7 +104,7 @@
 
 * Connection between nodes.
 
-### Conditional Edge
+### Conditional      
 
 * Dynamic routing based on conditions.
 

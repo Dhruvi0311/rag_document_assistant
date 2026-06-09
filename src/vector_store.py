@@ -28,7 +28,7 @@ class VectorStoreManager:
         unpacks the payloads, and upserts them cleanly into ChromaDB.
         """
         if not chunks:
-            print("⚠️ No chunks provided for vector storage database.")
+            print(" No chunks provided for vector storage database.")
             return
 
         ids = []
@@ -41,10 +41,10 @@ class VectorStoreManager:
             documents.append(chunk["text"])
             
             # ChromaDB metadatas can only store primitive types (str, int, float, bool).
-            # Our tracking dictionaries are already perfectly flattened primitives.
+            # Our tracking dictionaries are already perfectly flattened primitives.  
             metadatas.append(chunk["metadata"])
 
-        print(f"📦 Syncing {len(documents)} vectors to local DB storage...")
+        print(f" Syncing {len(documents)} vectors to local DB storage...")
         
         # Upsert adds new chunks or updates them if the chunk_id already exists (No duplicates!)
         self.collection.upsert(
@@ -52,7 +52,7 @@ class VectorStoreManager:
             documents=documents,
             metadatas=metadatas
         )
-        print("✅ Vector database synchronization complete.")
+        print(" Vector database synchronization complete.")
 
     def search_similar_chunks(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
         """
@@ -64,13 +64,13 @@ class VectorStoreManager:
             n_results=top_k
         )
 
-        # Reformat Chroma's nested response structure into a clean, easy-to-read list
+        # Reformat Chroma's nested response structure into a clean, easy-to-read list 
         formatted_results = []
         if results and results["ids"] and results["ids"][0]:
             for i in range(len(results["ids"][0])):
                 formatted_results.append({
                     "id": results["ids"][0][i],
-                    "text": results["documents"][0][i],
+                    "text": results["documents"][0][i], 
                     "metadata": results["metadatas"][0][i],
                     "distance": results["distances"][0][i] if "distances" in results else None
                 })

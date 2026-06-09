@@ -1,8 +1,0 @@
-Artificial Intelligence is transforming industries.
-
-Key Topics:
-- Machine Learning
-- Deep Learning
-- Natural Language Processing
-
-This is a sample TXT file for testing.
