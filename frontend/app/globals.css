@@ -1,0 +1,292 @@
+/* ── globals.css ──────────────────────────────────────────────────────────────
+   Minimalist Monochrome Design System
+   No rounded corners. No shadows. No accent colors.
+   Depth = color inversion. Division = thick borders.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@300;400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Custom Properties ───────────────────────────────────────────────── */
+:root {
+  --ink:       #000000;
+  --paper:     #FFFFFF;
+  --gray-100:  #F5F5F5;
+  --gray-200:  #E0E0E0;
+  --gray-400:  #9E9E9E;
+  --gray-600:  #616161;
+  --gray-800:  #212121;
+
+  /* Border weights */
+  --border-heavy: 4px solid var(--ink);
+  --border-mid:   2px solid var(--ink);
+  --border-light: 1px solid var(--gray-200);
+
+  /* Type ramp */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Source Serif 4', Georgia, serif;
+  --font-mono:    'JetBrains Mono', Menlo, monospace;
+
+  /* Transition */
+  --speed: 100ms;
+}
+
+/* ── Base Reset ──────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border-radius: 0 !important;  /* Nuclear option: enforce 0 radius site-wide */
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+/* ── Architectural Paper Texture ─────────────────────────────────────────── */
+/* SVG noise filter baked into the body background */
+body {
+  font-family: var(--font-body);
+  background-color: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  position: relative;
+
+  /* Noise overlay via pseudo-element so it doesn't obscure content */
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.028;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+  }
+}
+
+/* All interactive content sits above the noise */
+#__next, main, aside, header, footer, .above-noise {
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Structural Rule Lines ───────────────────────────────────────────────── */
+/* 
+  .rule-lines wraps any section that needs the architectural horizontal 
+  line background — like a ledger, 32px-spaced 1px lines.
+*/
+.rule-lines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 31px,
+    var(--gray-200) 31px,
+    var(--gray-200) 32px
+  );
+  background-attachment: local;
+}
+
+/* ── Typography Base ─────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+p, li, blockquote {
+  font-family: var(--font-body);
+  font-weight: 400;
+}
+
+code, pre, kbd, samp {
+  font-family: var(--font-mono);
+}
+
+/* ── Interactive Base States ─────────────────────────────────────────────── */
+button, [role="button"] {
+  cursor: pointer;
+  transition: background-color var(--speed) linear,
+              color var(--speed) linear,
+              border-color var(--speed) linear;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity var(--speed) linear;
+}
+
+/* ── Scrollbar Styling ───────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--gray-100);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gray-600);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink);
+}
+
+/* ── Focus Visible ───────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* ── Component Layer ─────────────────────────────────────────────────────── */
+@layer components {
+
+  /* Primary inverted button */
+  .btn-primary {
+    @apply bg-black text-white font-mono text-label-lg uppercase tracking-widest
+           px-6 py-3 border-2 border-black;
+    transition: background-color var(--speed) linear, color var(--speed) linear;
+
+    &:hover {
+      @apply bg-white text-black;
+    }
+    &:disabled {
+      @apply opacity-40 cursor-not-allowed;
+    }
+  }
+
+  /* Ghost button (outline only) */
+  .btn-ghost {
+    @apply bg-white text-black font-mono text-label-lg uppercase tracking-widest
+           px-6 py-3 border-2 border-black;
+    transition: background-color var(--speed) linear, color var(--speed) linear;
+
+    &:hover {
+      @apply bg-black text-white;
+    }
+  }
+
+  /* Citation badge — sharp rectangular tag */
+  .citation-badge {
+    @apply inline-block bg-gray-100 text-gray-600 font-mono text-label-sm
+           uppercase tracking-widest px-2 py-1 border border-gray-200;
+    transition: background-color var(--speed) linear, color var(--speed) linear,
+                border-color var(--speed) linear;
+
+    &:hover {
+      @apply bg-black text-white border-black;
+    }
+  }
+
+  /* Citation badge — active / expanded */
+  .citation-badge-active {
+    @apply bg-black text-white border-black;
+  }
+
+  /* File item in sidebar list */
+  .file-item {
+    @apply flex items-center justify-between px-4 py-3
+           border-b-4 border-black bg-white font-mono text-label-lg uppercase tracking-widest;
+    transition: background-color var(--speed) linear, color var(--speed) linear;
+
+    &:hover {
+      @apply bg-black text-white;
+    }
+    &:last-child {
+      @apply border-b-0;
+    }
+  }
+
+  /* Monochrome input — only bottom border */
+  .input-underline {
+    @apply w-full bg-transparent border-0 border-b-2 border-black
+           font-body text-body-md text-black
+           px-0 py-3 outline-none placeholder:text-gray-400;
+    transition: border-color var(--speed) linear;
+
+    &:focus {
+      @apply border-b-4;
+    }
+  }
+
+  /* Thick structural divider */
+  .divider-heavy {
+    @apply border-t-4 border-black;
+  }
+
+  .divider-light {
+    @apply border-t border-gray-200;
+  }
+}
+
+/* ── Utility Layer ───────────────────────────────────────────────────────── */
+@layer utilities {
+
+  .font-display  { font-family: var(--font-display); }
+  .font-body     { font-family: var(--font-body); }
+  .font-mono     { font-family: var(--font-mono); }
+
+  /* Blinking cursor for streaming animation */
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+  .cursor-blink::after {
+    content: "█";
+    animation: blink 0.9s step-end infinite;
+    font-weight: 400;
+    margin-left: 1px;
+  }
+
+  /* Fade-in for new message blocks */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in-up {
+    animation: fadeInUp 150ms linear forwards;
+  }
+
+  /* Skeleton pulse for loading states */
+  @keyframes pulse-bw {
+    0%, 100% { background-color: var(--gray-100); }
+    50%       { background-color: var(--gray-200); }
+  }
+  .skeleton {
+    animation: pulse-bw 1.4s ease-in-out infinite;
+  }
+
+  /* Text clamp utilities */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* ── Reduced Motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .cursor-blink::after {
+    animation: none;
+    opacity: 1;
+  }
+}

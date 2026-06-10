@@ -4,3 +4,14 @@ chroma_db/
 __pycache__/
 *.pyc
 .env
+# ── Next.js / Frontend ────────────────────────────────────────────
+frontend/.next/
+frontend/node_modules/
+frontend/.env.local
+frontend/next-env.d.ts
+
+# ── OS / Editor ───────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

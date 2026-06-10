@@ -1,13 +1,18 @@
 import hashlib
-from typing import List, Dict, Any, Generator
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from typing import List, Dict, Any
 
 class DocumentChunker:
     def __init__(self, chunk_size: int = 1000, chunk_overlap: int = 200):
         """
-        Initializes the chunker with a recursive character splitter for paragraphs/PDFs.
+        Initializes the chunker with a recursive character splitter for paragraphs/PDFs/TXT files.
         Tables and CSV rows bypass this to maintain their structural integrity.
         """
+        try:
+            from langchain_text_splitters import RecursiveCharacterTextSplitter
+        except ImportError:
+            print("⚠️ 'langchain-text-splitters' package not found. Run: pip install langchain-text-splitters")
+            raise
+
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
@@ -21,14 +26,14 @@ class DocumentChunker:
 
     def process_chunk(self, text: str, source_metadata: Dict[str, Any], chunk_index: int) -> Dict[str, Any]:
         """
-        Helper to construct a distinct chunk with full traceability back to the document source.
+        Constructs a distinct child chunk with full traceability back to the document source.
         """
         chunk_hash = self._generate_hash(text)
         
         # Build strict traceability metadata
         chunk_metadata = source_metadata.copy()
         
-        # Remove the generic file-level chunk_hash if it exists to replace it with the micro-chunk hash
+        # Move the generic file-level chunk_hash to prevent confusion with the unique micro-chunk hash
         if "chunk_hash" in chunk_metadata:
             chunk_metadata["parent_source_hash"] = chunk_metadata.pop("chunk_hash")
             
@@ -55,10 +60,11 @@ class DocumentChunker:
             text = doc["text"]
             meta = doc["metadata"]
             source_type = meta.get("source_type", "")
+            sub_type = meta.get("sub_type", "")
 
-            # Structural Strategy: Bypass text-splitting for Tables & CSV rows to keep them meaningful
-            if source_type in ["docx_table", "csv"]:
-                # Keep table structures or CSV data rows intact as single logical units
+            # --- STRUCTURAL STRATEGY ---
+            # Bypass text-splitting for tabular CSV rows and structural Word Tables to keep rows/cells intact
+            if source_type == "csv" or (source_type == "docx" and sub_type == "table"):
                 if text.strip():
                     chunk_obj = self.process_chunk(text, meta, chunk_index=0)
                     h = chunk_obj["metadata"]["chunk_hash"]
@@ -66,7 +72,8 @@ class DocumentChunker:
                         seen_chunk_hashes.add(h)
                         final_chunks.append(chunk_obj)
             
-            # Semantic/Paragraph Strategy: Split long articles, full OCR pages, or standard text blocks
+            # --- SEMANTIC / PARAGRAPH STRATEGY ---
+            # Split long articles, full OCR pages, Word paragraphs, or plain text file rows safely
             else:
                 split_texts = self.text_splitter.split_text(text)
                 for idx, split_text in enumerate(split_texts):
@@ -79,33 +86,5 @@ class DocumentChunker:
                             seen_chunk_hashes.add(h)
                             final_chunks.append(chunk_obj)
 
+        print(f"✂️ Core Chunking complete. Generated {len(final_chunks)} unified semantic chunks.")
         return final_chunks
-
-    def stream_chunk_docx(self, docx_generator: Generator[Dict[str, Any], None, None]) -> Generator[Dict[str, Any], None, None]:
-        """
-        Streams elements directly from the `stream_docx` generator from your loader.
-        This keeps memory consumption minimal by chunking elements on-the-fly.
-        """
-        seen_chunk_hashes = set()
-        
-        for element in docx_generator:
-            text = element["text"]
-            meta = element["metadata"]
-            source_type = meta.get("source_type", "")
-            
-            # Directly yield structural tables
-            if source_type == "docx_table":
-                chunk_obj = self.process_chunk(text, meta, chunk_index=0)
-                h = chunk_obj["metadata"]["chunk_hash"]
-                if h not in seen_chunk_hashes:
-                    seen_chunk_hashes.add(h)
-                    yield chunk_obj
-            else:
-                # Handle paragraphs safely if they happen to exceed chunk threshold
-                split_texts = self.text_splitter.split_text(text)
-                for idx, split_text in enumerate(split_texts):
-                    chunk_obj = self.process_chunk(split_text, meta, chunk_index=idx)
-                    h = chunk_obj["metadata"]["chunk_hash"]
-                    if h not in seen_chunk_hashes:
-                        seen_chunk_hashes.add(h)
-                        yield chunk_obj
