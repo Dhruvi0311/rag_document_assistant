@@ -115,11 +115,11 @@ export default function Sidebar({
   }
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-white/10 dark:bg-slate-900/10 backdrop-blur-md transition-colors">
 
       {/* ── Section header ────────────────────────────────────────────── */}
-      <div className="px-5 py-4 border-b-4 border-black">
-        <p className="font-mono text-label-lg uppercase tracking-widest text-black">
+      <div className="px-5 py-4 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/40 dark:bg-slate-900/40 transition-colors">
+        <p className="font-sans text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
           Document Index
         </p>
       </div>
@@ -135,30 +135,30 @@ export default function Sidebar({
         onClick={() => fileInputRef.current?.click()}
         onKeyDown={(e) => e.key === "Enter" && fileInputRef.current?.click()}
         className={`
-          relative mx-4 my-4 p-6 border-2 cursor-pointer
+          relative mx-4 my-4 p-6 border-2 border-dashed cursor-pointer rounded-2xl
           flex flex-col items-center justify-center gap-3
-          transition-colors duration-100 select-none
+          transition-all duration-150 select-none
           ${isDragging
-            ? "bg-black text-white border-black"
-            : "bg-white text-black border-black hover:bg-black hover:text-white"
+            ? "bg-blue-50 dark:bg-blue-900/30 border-blue-400 dark:border-blue-500 text-blue-800 dark:text-blue-300"
+            : "bg-blue-50/15 dark:bg-blue-900/10 text-slate-700 dark:text-slate-300 border-blue-200/50 dark:border-blue-800/50 hover:bg-blue-50/30 dark:hover:bg-blue-900/20 hover:border-blue-300 dark:hover:border-blue-700"
           }
           ${isUploading ? "pointer-events-none opacity-60" : ""}
         `}
         style={{ minHeight: 140 }}
       >
-        {/* Dashed inset line — architectural detail */}
+        {/* Soft inset frame line */}
         <div
           className={`
-            absolute inset-[6px] border pointer-events-none
-            ${isDragging ? "border-white" : "border-gray-200 group-hover:border-white"}
+            absolute inset-[6px] border pointer-events-none rounded-xl transition-colors
+            ${isDragging ? "border-blue-300/40 dark:border-blue-500/40" : "border-slate-200/20 dark:border-slate-700/20"}
           `}
-          style={{ borderStyle: "dashed" }}
+          style={{ borderStyle: "solid" }}
         />
 
         {isUploading ? (
           <>
             <UploadSpinner inverted={isDragging} />
-            <p className="font-mono text-label-lg uppercase tracking-widest z-10">
+            <p className="font-sans text-xs font-bold uppercase tracking-wider z-10 text-blue-600">
               Indexing…
             </p>
           </>
@@ -166,10 +166,10 @@ export default function Sidebar({
           <>
             <UploadIcon inverted={isDragging} />
             <div className="text-center z-10">
-              <p className="font-mono text-label-lg uppercase tracking-widest">
+              <p className="font-sans text-xs font-bold uppercase tracking-wider">
                 {isDragging ? "Release to index" : "Drop files here"}
               </p>
-              <p className="font-mono text-label-sm uppercase tracking-widest opacity-50 mt-1">
+              <p className="font-sans text-[9px] font-semibold uppercase tracking-wider text-slate-400 mt-1.5">
                 PDF · CSV · TXT · DOCX · IMG
               </p>
             </div>
@@ -189,16 +189,16 @@ export default function Sidebar({
 
       {/* ── Upload feedback ─────────────────────────────────────────────── */}
       {uploadResult && (
-        <div className="mx-4 mb-4 border-2 border-black bg-black text-white p-3 animate-fade-in-up">
-          <p className="font-mono text-label-sm uppercase tracking-widest opacity-70 mb-1">
-            Indexed
+        <div className="mx-4 mb-4 border border-emerald-100 bg-emerald-50/50 text-emerald-800 p-4 rounded-2xl animate-fade-in-up shadow-sm">
+          <p className="font-sans text-[10px] font-bold uppercase tracking-wider text-emerald-600 mb-1.5">
+            Success
           </p>
-          <p className="font-mono text-label-lg uppercase tracking-widest">
+          <p className="font-sans text-xs font-semibold">
             {uploadResult.total_chunks} chunks · {uploadResult.indexed_files.length} file
             {uploadResult.indexed_files.length !== 1 ? "s" : ""}
           </p>
           {uploadResult.rejected_files.length > 0 && (
-            <p className="font-mono text-label-sm uppercase tracking-widest opacity-60 mt-1">
+            <p className="font-sans text-[9px] tracking-wide text-emerald-600 mt-1">
               Skipped: {uploadResult.rejected_files.join(", ")}
             </p>
           )}
@@ -206,16 +206,16 @@ export default function Sidebar({
       )}
 
       {uploadError && (
-        <div className="mx-4 mb-4 border-2 border-black bg-white text-black p-3 animate-fade-in-up">
-          <p className="font-mono text-label-sm uppercase tracking-widest opacity-50 mb-1">Error</p>
-          <p className="font-body text-body-sm text-gray-800">{uploadError}</p>
+        <div className="mx-4 mb-4 border border-rose-100 bg-rose-50/50 text-rose-800 p-4 rounded-2xl animate-fade-in-up shadow-sm">
+          <p className="font-sans text-[10px] font-bold uppercase tracking-wider text-rose-600 mb-1.5">Error</p>
+          <p className="font-sans text-xs text-rose-700">{uploadError}</p>
         </div>
       )}
 
       {/* ── Active Index list ──────────────────────────────────────────── */}
-      <div className="border-t-4 border-black flex-1 overflow-y-auto">
-        <div className="px-5 py-3 border-b border-gray-200">
-          <p className="font-mono text-label-sm uppercase tracking-widest text-gray-400">
+      <div className="border-t border-slate-200/80 dark:border-slate-800/80 flex-1 overflow-y-auto bg-slate-50/10 dark:bg-slate-900/50 transition-colors">
+        <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800/50 transition-colors">
+          <p className="font-sans text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             Active Index ({indexedFiles.length})
           </p>
         </div>
@@ -223,37 +223,37 @@ export default function Sidebar({
         {isLoading ? (
           <div className="p-4 space-y-3">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="skeleton h-10 w-full" />
+              <div key={n} className="skeleton h-12 w-full" />
             ))}
           </div>
         ) : indexedFiles.length === 0 ? (
           <div className="px-5 py-8 text-center">
-            <p className="font-mono text-label-sm uppercase tracking-widest text-gray-400">
+            <p className="font-sans text-xs font-bold uppercase tracking-wider text-slate-400">
               No documents indexed
             </p>
-            <p className="font-body text-body-sm text-gray-400 mt-2">
+            <p className="font-sans text-xs text-slate-400 mt-1.5">
               Upload files above to begin.
             </p>
           </div>
         ) : (
-          <ul>
+          <ul className="flex flex-col gap-1.5 px-4 py-3">
             {indexedFiles.map((name) => (
               <li
                 key={name}
                 className="group flex items-center justify-between
-                           px-4 py-3 border-b-4 border-black bg-white
-                           hover:bg-black hover:text-white transition-colors duration-100"
+                           px-4 py-3 bg-white/80 dark:bg-slate-800/80 border border-slate-100/50 dark:border-slate-700/50 rounded-2xl shadow-sm
+                           hover:bg-white dark:hover:bg-slate-800 hover:border-blue-100/50 dark:hover:border-blue-900/50 hover:shadow transition-all duration-150"
               >
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   {/* Type badge */}
                   <span
-                    className="flex-none font-mono text-label-sm uppercase tracking-widest
-                               px-1.5 py-0.5 border border-current opacity-60"
+                    className="flex-none font-sans text-[9px] font-bold uppercase tracking-wider
+                               px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 border border-slate-200/20 dark:border-slate-600/20"
                   >
                     {getFileTypeLabel(name)}
                   </span>
                   {/* File name */}
-                  <span className="font-mono text-label-lg uppercase tracking-wider truncate">
+                  <span className="font-sans text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">
                     {name}
                   </span>
                 </div>
@@ -266,16 +266,16 @@ export default function Sidebar({
                   }}
                   disabled={deletingFile === name}
                   className="flex-none ml-2 opacity-0 group-hover:opacity-100
-                             transition-opacity duration-100 p-1
-                             hover:bg-white hover:text-black focus-visible:opacity-100"
+                             transition-opacity duration-150 p-1.5 rounded-lg
+                             text-slate-400 hover:text-rose-500 hover:bg-rose-50/50 focus-visible:opacity-100"
                   aria-label={`Remove ${name} from index`}
                   title="Remove from index"
                 >
                   {deletingFile === name ? (
-                    <span className="font-mono text-label-sm">…</span>
+                    <span className="font-sans text-[10px] text-slate-500 font-bold">…</span>
                   ) : (
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                      <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2" />
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                      <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
                     </svg>
                   )}
                 </button>
@@ -286,12 +286,15 @@ export default function Sidebar({
       </div>
 
       {/* ── Bottom system status bar ───────────────────────────────────── */}
-      <div className="border-t-4 border-black px-5 py-3">
+      <div className="border-t border-slate-200/80 dark:border-slate-800/80 px-5 py-3.5 bg-white/40 dark:bg-slate-900/40 transition-colors">
         <div className="flex items-center justify-between">
-          <span className="font-mono text-label-sm uppercase tracking-widest text-gray-400">
+          <span className="font-sans text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             Llama-3-8B · BGE Reranker
           </span>
-          <span className="w-2 h-2 bg-black" aria-label="System online" />
+          <div className="flex items-center gap-1.5">
+            <span className="font-sans text-[9px] font-bold uppercase tracking-wider text-slate-400">online</span>
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-sm shadow-emerald-500/50" aria-label="System online" />
+          </div>
         </div>
       </div>
 
@@ -301,26 +304,27 @@ export default function Sidebar({
 
 // ── Inline Icons ──────────────────────────────────────────────────────────
 function UploadIcon({ inverted }: { inverted: boolean }) {
-  const color = inverted ? "white" : "black";
+  const color = inverted ? "#1E40AF" : "currentColor";
   return (
     <svg
       width="28" height="28" viewBox="0 0 28 28" fill="none"
-      className="z-10 flex-none"
+      className="z-10 flex-none text-slate-500 dark:text-slate-400"
       aria-hidden="true"
     >
       <path
-        d="M14 20V8M14 8L9 13M14 8L19 13"
-        stroke={color} strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter"
+        d="M14 19V7M14 7L9 12M14 7L19 12"
+        stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
       />
       <path
         d="M5 22H23"
-        stroke={color} strokeWidth="2" strokeLinecap="square"
+        stroke={color} strokeWidth="2" strokeLinecap="round"
       />
     </svg>
   );
 }
 
 function UploadSpinner({ inverted }: { inverted: boolean }) {
+  const color = inverted ? "#1E40AF" : "#3B82F6";
   return (
     <svg
       className="z-10 animate-spin"
@@ -329,28 +333,28 @@ function UploadSpinner({ inverted }: { inverted: boolean }) {
     >
       <rect
         x="11" y="1" width="2" height="7"
-        fill={inverted ? "white" : "black"}
+        fill={color}
         opacity="1"
       />
       <rect
         x="11" y="16" width="2" height="7"
-        fill={inverted ? "white" : "black"}
+        fill={color}
         opacity="0.3"
       />
       <rect
         x="16.95" y="3.05" width="2" height="7"
-        fill={inverted ? "white" : "black"}
+        fill={color}
         opacity="0.7"
         transform="rotate(45 17.95 6.55)"
       />
       <rect
         x="1" y="11" width="7" height="2"
-        fill={inverted ? "white" : "black"}
+        fill={color}
         opacity="0.15"
       />
       <rect
         x="16" y="11" width="7" height="2"
-        fill={inverted ? "white" : "black"}
+        fill={color}
         opacity="0.5"
       />
     </svg>

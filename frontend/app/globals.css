@@ -1,10 +1,9 @@
 /* ── globals.css ──────────────────────────────────────────────────────────────
-   Minimalist Monochrome Design System
-   No rounded corners. No shadows. No accent colors.
-   Depth = color inversion. Division = thick borders.
+   Modern Glassmorphic Design System
+   Soft corners. Diffusion shadows. Clean blue-grey gradients.
    ──────────────────────────────────────────────────────────────────────────── */
 
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@300;400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&family=JetBrains+Mono:wght@300;400;500&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -12,26 +11,26 @@
 
 /* ── CSS Custom Properties ───────────────────────────────────────────────── */
 :root {
-  --ink:       #000000;
+  --ink:       #0F172A; /* Slate 900 */
   --paper:     #FFFFFF;
-  --gray-100:  #F5F5F5;
-  --gray-200:  #E0E0E0;
-  --gray-400:  #9E9E9E;
-  --gray-600:  #616161;
-  --gray-800:  #212121;
-
-  /* Border weights */
-  --border-heavy: 4px solid var(--ink);
-  --border-mid:   2px solid var(--ink);
-  --border-light: 1px solid var(--gray-200);
+  --bg-app:    #F4F7FB; /* Soft light blue-grey */
+  
+  --gray-50:   #F8FAFC;
+  --gray-100:  #F1F5F9;
+  --gray-200:  #E2E8F0;
+  --gray-300:  #CBD5E1;
+  --gray-400:  #94A3B8;
+  --gray-600:  #475569;
+  --gray-800:  #1E293B;
 
   /* Type ramp */
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body:    'Source Serif 4', Georgia, serif;
+  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono:    'JetBrains Mono', Menlo, monospace;
 
-  /* Transition */
-  --speed: 100ms;
+  /* Transitions */
+  --speed: 150ms;
 }
 
 /* ── Base Reset ──────────────────────────────────────────────────────────── */
@@ -39,7 +38,6 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  border-radius: 0 !important;  /* Nuclear option: enforce 0 radius site-wide */
 }
 
 html {
@@ -49,180 +47,133 @@ html {
   scroll-behavior: smooth;
 }
 
-/* ── Architectural Paper Texture ─────────────────────────────────────────── */
-/* SVG noise filter baked into the body background */
 body {
-  font-family: var(--font-body);
-  background-color: var(--paper);
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
   color: var(--ink);
   min-height: 100vh;
   position: relative;
-
-  /* Noise overlay via pseudo-element so it doesn't obscure content */
-  &::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.028;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-  }
-}
-
-/* All interactive content sits above the noise */
-#__next, main, aside, header, footer, .above-noise {
-  position: relative;
-  z-index: 1;
-}
-
-/* ── Structural Rule Lines ───────────────────────────────────────────────── */
-/* 
-  .rule-lines wraps any section that needs the architectural horizontal 
-  line background — like a ledger, 32px-spaced 1px lines.
-*/
-.rule-lines {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent,
-    transparent 31px,
-    var(--gray-200) 31px,
-    var(--gray-200) 32px
-  );
-  background-attachment: local;
-}
-
-/* ── Typography Base ─────────────────────────────────────────────────────── */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-}
-
-p, li, blockquote {
-  font-family: var(--font-body);
-  font-weight: 400;
-}
-
-code, pre, kbd, samp {
-  font-family: var(--font-mono);
 }
 
 /* ── Interactive Base States ─────────────────────────────────────────────── */
 button, [role="button"] {
   cursor: pointer;
-  transition: background-color var(--speed) linear,
-              color var(--speed) linear,
-              border-color var(--speed) linear;
+  transition: background-color var(--speed) ease,
+              color var(--speed) ease,
+              border-color var(--speed) ease,
+              transform var(--speed) ease,
+              box-shadow var(--speed) ease;
 }
 
 a {
   color: inherit;
   text-decoration: none;
-  transition: opacity var(--speed) linear;
+  transition: opacity var(--speed) ease;
 }
 
 /* ── Scrollbar Styling ───────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--gray-100);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--gray-600);
+  background: var(--gray-300);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--ink);
+  background: var(--gray-400);
 }
 
 /* ── Focus Visible ───────────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid var(--ink);
+  outline: 2px solid #3B82F6;
   outline-offset: 2px;
 }
 
 /* ── Component Layer ─────────────────────────────────────────────────────── */
 @layer components {
 
-  /* Primary inverted button */
+  /* Modern primary button */
   .btn-primary {
-    @apply bg-black text-white font-mono text-label-lg uppercase tracking-widest
-           px-6 py-3 border-2 border-black;
-    transition: background-color var(--speed) linear, color var(--speed) linear;
+    @apply bg-slate-900 text-white font-sans text-xs font-semibold uppercase tracking-wider
+           px-6 py-3 rounded-full border border-slate-900 shadow-sm transition-all duration-150;
 
     &:hover {
-      @apply bg-white text-black;
+      @apply bg-slate-800 border-slate-800 shadow-md scale-[1.02];
+    }
+    &:active {
+      @apply scale-95;
     }
     &:disabled {
-      @apply opacity-40 cursor-not-allowed;
+      @apply opacity-40 cursor-not-allowed shadow-none transform-none;
     }
   }
 
-  /* Ghost button (outline only) */
+  /* Ghost/Secondary button */
   .btn-ghost {
-    @apply bg-white text-black font-mono text-label-lg uppercase tracking-widest
-           px-6 py-3 border-2 border-black;
-    transition: background-color var(--speed) linear, color var(--speed) linear;
+    @apply bg-white/80 text-slate-700 font-sans text-xs font-semibold uppercase tracking-wider
+           px-6 py-3 rounded-full border border-slate-200 shadow-sm backdrop-blur-sm transition-all duration-150;
 
     &:hover {
-      @apply bg-black text-white;
+      @apply bg-white border-slate-300 text-slate-900 shadow;
+    }
+    &:active {
+      @apply scale-95;
     }
   }
 
-  /* Citation badge — sharp rectangular tag */
+  /* Citation badge — soft rounded tag */
   .citation-badge {
-    @apply inline-block bg-gray-100 text-gray-600 font-mono text-label-sm
-           uppercase tracking-widest px-2 py-1 border border-gray-200;
-    transition: background-color var(--speed) linear, color var(--speed) linear,
-                border-color var(--speed) linear;
+    @apply inline-flex items-center bg-slate-50 text-slate-600 font-sans text-[11px]
+           font-medium tracking-wide px-3 py-1.5 rounded-full border border-slate-100 shadow-sm;
+    transition: all var(--speed) ease;
 
     &:hover {
-      @apply bg-black text-white border-black;
+      @apply bg-slate-900 text-white border-slate-900 shadow scale-[1.02];
+    }
+    &:active {
+      @apply scale-95;
     }
   }
 
   /* Citation badge — active / expanded */
   .citation-badge-active {
-    @apply bg-black text-white border-black;
+    @apply bg-slate-900 text-white border-slate-900 shadow;
   }
 
   /* File item in sidebar list */
   .file-item {
     @apply flex items-center justify-between px-4 py-3
-           border-b-4 border-black bg-white font-mono text-label-lg uppercase tracking-widest;
-    transition: background-color var(--speed) linear, color var(--speed) linear;
+           bg-white/95 border border-slate-100 rounded-2xl shadow-sm font-sans text-sm text-slate-800;
+    transition: all var(--speed) ease-in-out;
 
     &:hover {
-      @apply bg-black text-white;
-    }
-    &:last-child {
-      @apply border-b-0;
+      @apply bg-white border-blue-100 shadow-md translate-y-[-1px];
     }
   }
 
-  /* Monochrome input — only bottom border */
+  /* Underline input style reimagined as modern pill/rounded input */
   .input-underline {
-    @apply w-full bg-transparent border-0 border-b-2 border-black
-           font-body text-body-md text-black
-           px-0 py-3 outline-none placeholder:text-gray-400;
-    transition: border-color var(--speed) linear;
+    @apply w-full bg-white border border-slate-200/80
+           font-sans text-sm text-slate-800
+           px-5 py-3.5 rounded-3xl shadow-sm outline-none placeholder:text-slate-400;
+    transition: all var(--speed) ease;
 
     &:focus {
-      @apply border-b-4;
+      @apply border-blue-400 ring-4 ring-blue-500/5 bg-white shadow-md;
     }
   }
 
   /* Thick structural divider */
   .divider-heavy {
-    @apply border-t-4 border-black;
+    @apply border-t border-slate-200;
   }
 
   .divider-light {
-    @apply border-t border-gray-200;
+    @apply border-t border-slate-100;
   }
 }
 
@@ -231,7 +182,15 @@ a {
 
   .font-display  { font-family: var(--font-display); }
   .font-body     { font-family: var(--font-body); }
+  .font-sans     { font-family: var(--font-sans); }
   .font-mono     { font-family: var(--font-mono); }
+
+  /* Geometric Node Connection Network Pattern for Main Card Background */
+  .geometric-pattern {
+    background-color: #ffffff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23f1f5f9' stroke-width='0.75'%3E%3Cpath d='M0 40h80M40 0v80M0 0l80 80M0 80L80 0'/%3E%3Ccircle cx='40' cy='40' r='3' fill='%23e2e8f0'/%3E%3Ccircle cx='0' cy='0' r='2' fill='%23e2e8f0'/%3E%3Ccircle cx='80' cy='0' r='2' fill='%23e2e8f0'/%3E%3Ccircle cx='0' cy='80' r='2' fill='%23e2e8f0'/%3E%3Ccircle cx='80' cy='80' r='2' fill='%23e2e8f0'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 80px 80px;
+  }
 
   /* Blinking cursor for streaming animation */
   @keyframes blink {
@@ -251,7 +210,7 @@ a {
     to   { opacity: 1; transform: translateY(0); }
   }
   .animate-fade-in-up {
-    animation: fadeInUp 150ms linear forwards;
+    animation: fadeInUp 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   /* Skeleton pulse for loading states */
@@ -261,6 +220,7 @@ a {
   }
   .skeleton {
     animation: pulse-bw 1.4s ease-in-out infinite;
+    border-radius: 8px;
   }
 
   /* Text clamp utilities */
@@ -290,3 +250,4 @@ a {
     opacity: 1;
   }
 }
+
