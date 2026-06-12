@@ -507,13 +507,13 @@ function MessageBlock({
     >
       {isUser ? (
         // ── User message: Playfair Display serif, right-aligned, soft border ────
-        <div className="py-8 border-b border-slate-100 dark:border-slate-800/50 transition-colors">
-          <div className="flex flex-col items-end gap-3">
+        <div className="py-6 border-b border-slate-100 dark:border-slate-800/50 transition-colors">
+          <div className="flex flex-col items-end gap-2">
             <span className="font-sans text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
               You
             </span>
             <p
-              className="font-display text-display-lg font-black tracking-tighter
+              className="font-display text-2xl md:text-3xl font-bold tracking-tight
                          text-slate-900 dark:text-white text-right max-w-2xl transition-colors"
             >
               {message.content}
@@ -522,9 +522,9 @@ function MessageBlock({
         </div>
       ) : (
         // ── Assistant message: Source Serif 4 body text, soft borders ─────────────────
-        <div className={`py-8 transition-colors ${isLast ? "" : "border-b border-slate-100 dark:border-slate-800/50"}`}>
+        <div className={`py-6 transition-colors ${isLast ? "" : "border-b border-slate-100 dark:border-slate-800/50"}`}>
           {/* Role label */}
-          <div className="flex items-center gap-3 mb-5">
+          <div className="flex items-center gap-3 mb-4">
             <span className="font-sans text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
               Archival
             </span>

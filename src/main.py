@@ -15,6 +15,7 @@ from typing import List, Optional, AsyncGenerator
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
@@ -31,10 +32,16 @@ from vector_store import VectorStoreManager
 from sparse_store import SparseStoreManager
 from reranker import RerankerManager
 from query_rewriter import QueryRewriter
+from router import route_intent
+from general_chat import general_chat_stream
+from rag_chain import rag_token_stream
 
 # ── App bootstrap ──────────────────────────────────────────────────────────
 load_dotenv()
 app = FastAPI(title="RAG Document Assistant API", version="2.0.0")
+
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 app.add_middleware(
     CORSMiddleware,
@@ -43,6 +50,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/api/documents", StaticFiles(directory=UPLOAD_DIR), name="documents")
 
 # ── Pydantic request schemas ───────────────────────────────────────────────
 class ChatMessage(BaseModel):
@@ -114,61 +123,56 @@ ALLOWED_EXTENSIONS = {".pdf", ".csv", ".txt", ".docx", ".png", ".jpg", ".jpeg"}
 @app.post("/api/upload")
 async def upload_files(files: List[UploadFile] = File(...)):
     """
-    Accepts one or more files, saves them to a temp directory,
+    Accepts one or more files, saves them to a permanent directory,
     runs the full ingestion pipeline, and upserts to both indices.
     Returns a summary of what was indexed.
     """
     if not files:
         raise HTTPException(status_code=400, detail="No files provided.")
 
-    tmp_dir = tempfile.mkdtemp()
     saved_paths: List[str] = []
     rejected: List[str] = []
 
-    try:
-        # Save uploads to temp dir, reject unsupported types
-        for upload in files:
-            _, ext = os.path.splitext(upload.filename or "")
-            if ext.lower() not in ALLOWED_EXTENSIONS:
-                rejected.append(upload.filename)
-                continue
-            dest = os.path.join(tmp_dir, upload.filename)
-            with open(dest, "wb") as f:
-                shutil.copyfileobj(upload.file, f)
-            saved_paths.append(dest)
+    # Save uploads to UPLOAD_DIR, reject unsupported types
+    for upload in files:
+        _, ext = os.path.splitext(upload.filename or "")
+        if ext.lower() not in ALLOWED_EXTENSIONS:
+            rejected.append(upload.filename)
+            continue
+        dest = os.path.join(UPLOAD_DIR, upload.filename)
+        with open(dest, "wb") as f:
+            shutil.copyfileobj(upload.file, f)
+        saved_paths.append(dest)
 
-        if not saved_paths:
-            raise HTTPException(
-                status_code=422,
-                detail=f"No supported files. Rejected: {rejected}. "
-                       f"Supported types: {', '.join(ALLOWED_EXTENSIONS)}",
-            )
+    if not saved_paths:
+        raise HTTPException(
+            status_code=422,
+            detail=f"No supported files. Rejected: {rejected}. "
+                   f"Supported types: {', '.join(ALLOWED_EXTENSIONS)}",
+        )
 
-        # Ingestion pipeline
-        loader = DocumentLoader(target_dir=tmp_dir)
-        raw_docs = loader.load_batch(saved_paths)
+    # Ingestion pipeline
+    loader = DocumentLoader(target_dir=UPLOAD_DIR)
+    raw_docs = loader.load_batch(saved_paths)
 
-        chunker = DocumentChunker(chunk_size=1000, chunk_overlap=200)
-        chunks = chunker.chunk_documents(raw_docs)
+    chunker = DocumentChunker(chunk_size=1000, chunk_overlap=200)
+    chunks = chunker.chunk_documents(raw_docs)
 
-        if not chunks:
-            raise HTTPException(status_code=422, detail="Files parsed but produced no text chunks.")
+    if not chunks:
+        raise HTTPException(status_code=422, detail="Files parsed but produced no text chunks.")
 
-        # Dual indexing
-        services.vdb.upsert_chunks(chunks)
-        services.sparse_db.index_chunks(chunks)
+    # Dual indexing
+    services.vdb.upsert_chunks(chunks)
+    services.sparse_db.index_chunks(chunks)
 
-        indexed_files = list({c["metadata"]["file_name"] for c in chunks})
+    indexed_files = list({c["metadata"]["file_name"] for c in chunks})
 
-        return {
-            "status": "success",
-            "indexed_files": indexed_files,
-            "total_chunks": len(chunks),
-            "rejected_files": rejected,
-        }
-
-    finally:
-        shutil.rmtree(tmp_dir, ignore_errors=True)
+    return {
+        "status": "success",
+        "indexed_files": indexed_files,
+        "total_chunks": len(chunks),
+        "rejected_files": rejected,
+    }
 
 
 # ── /api/files ─────────────────────────────────────────────────────────────
@@ -181,130 +185,46 @@ async def list_indexed_files():
 
 @app.delete("/api/files/{file_name}")
 async def delete_file(file_name: str):
-    """Removes all chunks for a given file from the vector index."""
+    """Removes all chunks for a given file from the vector index and disk."""
     services.vdb.delete_file_from_index(file_name)
+    file_path = os.path.join(UPLOAD_DIR, file_name)
+    if os.path.exists(file_path):
+        os.remove(file_path)
     return {"status": "deleted", "file_name": file_name}
 
 
 # ── /api/chat ──────────────────────────────────────────────────────────────
-async def token_stream(
-    query: str,
-    history: List[ChatMessage],
-    top_k: int,
-    rerank_threshold: float,
-) -> AsyncGenerator[str, None]:
-    """
-    Core RAG streaming generator.
-    Yields Server-Sent Event (SSE) lines so the frontend can consume
-    token-by-token via EventSource / ReadableStream.
-
-    SSE payload types:
-      data: {"type": "citation", "chunks": [...]}
-      data: {"type": "token",    "text":  "..."}
-      data: {"type": "done"}
-      data: {"type": "error",    "message": "..."}
-    """
-    DISTANCE_THRESHOLD = 0.75
-
-    def sse(payload: dict) -> str:
-        return f"data: {json.dumps(payload)}\n\n"
-
-    try:
-        # 1. Rewrite query using conversation history
-        lc_history = []
-        for m in history:
-            if m.role == "user":
-                lc_history.append(HumanMessage(content=m.content))
-            else:
-                lc_history.append(AIMessage(content=m.content))
-
-        optimized_query = services.rewriter.condense_query(query, lc_history)
-
-        # 2. Hybrid retrieval
-        dense_hits = services.vdb.search_similar_chunks(optimized_query, top_k=top_k)
-        sparse_hits = services.sparse_db.search_keywords(optimized_query, top_k=top_k)
-
-        # Distance-gate dense hits
-        dense_hits = [h for h in dense_hits if h.get("distance") is not None and h["distance"] <= DISTANCE_THRESHOLD]
-
-        if not dense_hits and not sparse_hits:
-            yield sse({"type": "error", "message": "No relevant context found in the indexed documents."})
-            return
-
-        # 3. RRF fusion + cross-encoder reranking
-        fused = services.reranker.reciprocal_rank_fusion(dense_hits, sparse_hits)
-        gated = services.reranker.rerank_and_gate_chunks(optimized_query, fused, threshold=rerank_threshold)
-
-        if not gated:
-            yield sse({"type": "error", "message": "Retrieved chunks did not pass the relevance threshold."})
-            return
-
-        # 4. Emit citation metadata before tokens start flowing
-        citations = [
-            {
-                "file_name": c["metadata"].get("file_name", "Unknown"),
-                "chunk_id": c["metadata"].get("chunk_id", ""),
-                "relevance_score": round(c.get("relevance_score", 0.0), 4),
-                "text_preview": c["text"][:160].strip(),
-            }
-            for c in gated[:5]
-        ]
-        yield sse({"type": "citation", "chunks": citations})
-
-        # 5. Build context block
-        context_parts = []
-        for i, chunk in enumerate(gated[:5], 1):
-            fname = chunk["metadata"].get("file_name", "Unknown")
-            context_parts.append(f"[Source {i} — {fname}]\n{chunk['text'].strip()}")
-        context_block = "\n\n".join(context_parts)
-
-        # 6. LLM streaming
-        # NOTE: ChatHuggingFace doesn't support true streaming natively via .stream(),
-        # so we invoke the full response and emit tokens word-by-word to simulate
-        # progressive rendering on the frontend. Replace with .astream() when
-        # your endpoint supports it.
-        system_instruction = (
-            "You are an advanced RAG Document Assistant. Use ONLY the retrieved context below "
-            "to answer the user's question. Cite source numbers when referencing specific facts. "
-            "If the context does not contain the answer, state clearly that it is not in the documents.\n\n"
-            f"Retrieved Context:\n{context_block}"
-        )
-
-        messages = [
-            SystemMessage(content=system_instruction),
-            HumanMessage(content=query),
-        ]
-
-        response_obj = await asyncio.to_thread(services.llm.invoke, messages)
-        full_text: str = response_obj.content.strip()
-
-        # Emit token-by-token (word granularity for smooth UX)
-        words = full_text.split(" ")
-        for i, word in enumerate(words):
-            chunk_text = word if i == len(words) - 1 else word + " "
-            yield sse({"type": "token", "text": chunk_text})
-            await asyncio.sleep(0.018)  # ~55 words/sec — feels natural
-
-        yield sse({"type": "done"})
-
-    except Exception as exc:
-        yield sse({"type": "error", "message": str(exc)})
-
-
 @app.post("/api/chat")
 async def chat(request: ChatRequest):
     """
-    Streaming chat endpoint. Returns SSE stream.
-    Frontend should consume with fetch + ReadableStream (not EventSource,
-    since POST bodies aren't supported by EventSource).
+    Streaming chat endpoint with intelligent routing and short-term memory buffer.
+    Frontend should consume with fetch + ReadableStream.
     """
-    return StreamingResponse(
-        token_stream(
+    # 1. Short-term memory buffer (last 10 messages = 5 pairs)
+    recent_history = request.history[-10:] if request.history else []
+    
+    # 2. Intent Classification
+    intent = route_intent(request.query, recent_history, services.llm)
+    print(f"[{request.query}] -> Routed as: {intent}")
+    
+    # 3. Conditional Routing
+    if intent == "GENERAL_CHAT":
+        stream_generator = general_chat_stream(
             query=request.query,
-            history=request.history,
+            history=recent_history,
+            llm=services.llm
+        )
+    else:
+        stream_generator = rag_token_stream(
+            query=request.query,
+            history=recent_history,
             top_k=request.top_k,
             rerank_threshold=request.rerank_threshold,
-        ),
+            services=services
+        )
+        
+    return StreamingResponse(
+        stream_generator,
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
@@ -312,6 +232,56 @@ async def chat(request: ChatRequest):
         },
     )
 
+
+# ── /api/graph ─────────────────────────────────────────────────────────────
+@app.get("/api/graph")
+async def get_knowledge_graph():
+    file_texts = {}
+    file_chunks = {}
+    for chunk in services.sparse_db.raw_chunks:
+        fname = chunk["metadata"].get("file_name", "Unknown")
+        file_texts[fname] = file_texts.get(fname, "") + " " + chunk["text"]
+        file_chunks[fname] = file_chunks.get(fname, 0) + 1
+        
+    from collections import Counter
+    import re
+    stop_words = {"the","and","of","to","a","in","is","that","for","it","as","was","with","be","by","on","not","this","are","or","from","at","which","but","have","an","has","they","you","will","can","if","their","we","what","about","when","there","all","out","up","who","so","would","more","some","them","these","into","its","only","could","than","then","other","how","also"}
+    
+    nodes = []
+    links = []
+    keyword_freq = {}
+    file_keywords = {}
+    
+    for fname, text in file_texts.items():
+        nodes.append({
+            "id": fname, 
+            "group": "file", 
+            "val": 12 + min(file_chunks[fname] / 2, 15), 
+            "chunk_count": file_chunks[fname]
+        })
+        words = re.findall(r'\b[a-z]{4,}\b', text.lower())
+        words = [w for w in words if w not in stop_words]
+        counts = Counter(words)
+        top_words = [w for w, c in counts.most_common(8)]
+        file_keywords[fname] = top_words
+        
+        for w in top_words:
+            keyword_freq[w] = keyword_freq.get(w, 0) + counts[w]
+            
+    added_keywords = set()
+    for fname, top_words in file_keywords.items():
+        for w in top_words:
+            if w not in added_keywords:
+                nodes.append({
+                    "id": w, 
+                    "group": "keyword", 
+                    "val": 4 + min(keyword_freq[w] / 1.5, 12), 
+                    "frequency": keyword_freq[w]
+                })
+                added_keywords.add(w)
+            links.append({"source": fname, "target": w})
+            
+    return {"nodes": nodes, "links": links}
 
 # ── Health check ───────────────────────────────────────────────────────────
 @app.get("/api/health")

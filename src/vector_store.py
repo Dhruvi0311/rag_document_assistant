@@ -66,8 +66,8 @@ class VectorStoreManager:
         results = self.collection.query(
             query_texts=[query],
             n_results=top_k,
-            where=where_clause # Pass the metadata filter to Chroma
-        )
+            where=where_clause # Pass the metadata filter to ChromaDB's query method
+        )    
 
         formatted_results = []
         if results and results["ids"] and results["ids"][0]:

@@ -1,0 +1,5 @@
+Algorithm Name,Primary Concept,Data Structure Used,Time Complexity
+Merge Sort,Divide and Conquer,Array or Linked List,O(N log N)
+Dijkstra's,Shortest Path Optimization,Min-Priority Queue,O(V log V + E)
+Kruskal's,Minimum Spanning Tree,Disjoint Set Union (DSU),O(E log E)
+Rabin-Karp,Substring Pattern Matching,Rolling Hash Function,O(N + M)

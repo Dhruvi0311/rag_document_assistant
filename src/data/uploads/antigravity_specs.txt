@@ -1,0 +1,1 @@
+The core component of the Project Daedalus antigravity engine is the inverse-tachyon matrix. To counteract Earth's local gravitational pull, this specific matrix requires a baseline power injection of 1.21 gigawatts. Warning: Never expose the matrix assembly to ionized water or severe catastrophic failure will occur.

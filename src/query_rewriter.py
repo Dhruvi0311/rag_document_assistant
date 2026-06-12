@@ -12,10 +12,16 @@ class QueryRewriter:
             "Given the following conversation history and a new user follow-up question, "
             "rephrase the follow-up question into a STANDALONE, keyword-rich search query.\n\n"
             "CRITICAL RULES:\n"
-            "1. Resolve all pronouns (it, its, they, that file, etc.) into explicit nouns mentioned in the history.\n"
+            "1. Resolve all pronouns (it, its, they, that file, etc.) into explicit nouns or entities mentioned in the history.\n"
             "2. Do NOT answer the question. Your ONLY output must be the optimized search phrase.\n"
             "3. If the question is already a standalone concept and doesn't need history, return it exactly as is.\n"
-            "4. Do not include conversational filler like 'Here is the query:'."
+            "4. Do not include conversational filler like 'Here is the query:' or wrap it in quotes.\n\n"
+            "EXAMPLE:\n"
+            "Chat History:\n"
+            "User: What is the revenue of Apple in 2023?\n"
+            "Assistant: Apple's revenue in 2023 was 383 billion USD.\n"
+            "Follow-up Question: What about its net income?\n\n"
+            "Optimized Search Query: Apple net income 2023"
         )
 
     def condense_query(self, user_message: str, chat_history: list) -> str:
@@ -34,7 +40,7 @@ class QueryRewriter:
             role = "User" if isinstance(msg, HumanMessage) else "Assistant"
             history_str += f"{role}: {msg.content}\n"
 
-        # Construct the exact prompt for the rewriting task
+        # Construct the exact prompt for the rewriting task  
         task_prompt = (
             f"Chat History:\n{history_str}\n"
             f"Follow-up Question: {user_message}\n\n"

@@ -11,30 +11,34 @@
 
 /* ── CSS Custom Properties ───────────────────────────────────────────────── */
 :root {
-  --ink:       #0F172A; /* Slate 900 */
-  --paper:     #FFFFFF;
-  --bg-app:    #F4F7FB; /* Soft light blue-grey */
-  
-  --gray-50:   #F8FAFC;
-  --gray-100:  #F1F5F9;
-  --gray-200:  #E2E8F0;
-  --gray-300:  #CBD5E1;
-  --gray-400:  #94A3B8;
-  --gray-600:  #475569;
-  --gray-800:  #1E293B;
+  --ink: #0F172A;
+  /* Slate 900 */
+  --paper: #FFFFFF;
+  --bg-app: #F4F7FB;
+  /* Soft light blue-grey */
+
+  --gray-50: #F8FAFC;
+  --gray-100: #F1F5F9;
+  --gray-200: #E2E8F0;
+  --gray-300: #CBD5E1;
+  --gray-400: #94A3B8;
+  --gray-600: #475569;
+  --gray-800: #1E293B;
 
   /* Type ramp */
   --font-display: 'Playfair Display', Georgia, serif;
-  --font-body:    'Source Serif 4', Georgia, serif;
-  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono:    'JetBrains Mono', Menlo, monospace;
+  --font-body: 'Source Serif 4', Georgia, serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', Menlo, monospace;
 
   /* Transitions */
   --speed: 150ms;
 }
 
 /* ── Base Reset ──────────────────────────────────────────────────────────── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -56,13 +60,14 @@ body {
 }
 
 /* ── Interactive Base States ─────────────────────────────────────────────── */
-button, [role="button"] {
+button,
+[role="button"] {
   cursor: pointer;
   transition: background-color var(--speed) ease,
-              color var(--speed) ease,
-              border-color var(--speed) ease,
-              transform var(--speed) ease,
-              box-shadow var(--speed) ease;
+    color var(--speed) ease,
+    border-color var(--speed) ease,
+    transform var(--speed) ease,
+    box-shadow var(--speed) ease;
 }
 
 a {
@@ -76,13 +81,16 @@ a {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--gray-300);
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--gray-400);
 }
@@ -98,15 +106,16 @@ a {
 
   /* Modern primary button */
   .btn-primary {
-    @apply bg-slate-900 text-white font-sans text-xs font-semibold uppercase tracking-wider
-           px-6 py-3 rounded-full border border-slate-900 shadow-sm transition-all duration-150;
+    @apply bg-slate-900 text-white font-sans text-xs font-semibold uppercase tracking-wider px-6 py-3 rounded-full border border-slate-900 shadow-sm transition-all duration-150;
 
     &:hover {
       @apply bg-slate-800 border-slate-800 shadow-md scale-[1.02];
     }
+
     &:active {
       @apply scale-95;
     }
+
     &:disabled {
       @apply opacity-40 cursor-not-allowed shadow-none transform-none;
     }
@@ -114,12 +123,12 @@ a {
 
   /* Ghost/Secondary button */
   .btn-ghost {
-    @apply bg-white/80 text-slate-700 font-sans text-xs font-semibold uppercase tracking-wider
-           px-6 py-3 rounded-full border border-slate-200 shadow-sm backdrop-blur-sm transition-all duration-150;
+    @apply bg-white/80 text-slate-700 font-sans text-xs font-semibold uppercase tracking-wider px-6 py-3 rounded-full border border-slate-200 shadow-sm backdrop-blur-sm transition-all duration-150;
 
     &:hover {
       @apply bg-white border-slate-300 text-slate-900 shadow;
     }
+
     &:active {
       @apply scale-95;
     }
@@ -127,13 +136,13 @@ a {
 
   /* Citation badge — soft rounded tag */
   .citation-badge {
-    @apply inline-flex items-center bg-slate-50 text-slate-600 font-sans text-[11px]
-           font-medium tracking-wide px-3 py-1.5 rounded-full border border-slate-100 shadow-sm;
+    @apply inline-flex items-center bg-slate-50 text-slate-600 font-sans text-[11px] font-medium tracking-wide px-3 py-1.5 rounded-full border border-slate-100 shadow-sm;
     transition: all var(--speed) ease;
 
     &:hover {
       @apply bg-slate-900 text-white border-slate-900 shadow scale-[1.02];
     }
+
     &:active {
       @apply scale-95;
     }
@@ -146,8 +155,7 @@ a {
 
   /* File item in sidebar list */
   .file-item {
-    @apply flex items-center justify-between px-4 py-3
-           bg-white/95 border border-slate-100 rounded-2xl shadow-sm font-sans text-sm text-slate-800;
+    @apply flex items-center justify-between px-4 py-3 bg-white/95 border border-slate-100 rounded-2xl shadow-sm font-sans text-sm text-slate-800;
     transition: all var(--speed) ease-in-out;
 
     &:hover {
@@ -157,9 +165,7 @@ a {
 
   /* Underline input style reimagined as modern pill/rounded input */
   .input-underline {
-    @apply w-full bg-white border border-slate-200/80
-           font-sans text-sm text-slate-800
-           px-5 py-3.5 rounded-3xl shadow-sm outline-none placeholder:text-slate-400;
+    @apply w-full bg-white border border-slate-200/80 font-sans text-sm text-slate-800 px-5 py-3.5 rounded-3xl shadow-sm outline-none placeholder:text-slate-400;
     transition: all var(--speed) ease;
 
     &:focus {
@@ -180,10 +186,21 @@ a {
 /* ── Utility Layer ───────────────────────────────────────────────────────── */
 @layer utilities {
 
-  .font-display  { font-family: var(--font-display); }
-  .font-body     { font-family: var(--font-body); }
-  .font-sans     { font-family: var(--font-sans); }
-  .font-mono     { font-family: var(--font-mono); }
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-body {
+    font-family: var(--font-body);
+  }
+
+  .font-sans {
+    font-family: var(--font-sans);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
 
   /* Geometric Node Connection Network Pattern for Main Card Background */
   .geometric-pattern {
@@ -194,9 +211,17 @@ a {
 
   /* Blinking cursor for streaming animation */
   @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0; }
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0;
+    }
   }
+
   .cursor-blink::after {
     content: "█";
     animation: blink 0.9s step-end infinite;
@@ -206,18 +231,34 @@ a {
 
   /* Fade-in for new message blocks */
   @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
+
   .animate-fade-in-up {
     animation: fadeInUp 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   /* Skeleton pulse for loading states */
   @keyframes pulse-bw {
-    0%, 100% { background-color: var(--gray-100); }
-    50%       { background-color: var(--gray-200); }
+
+    0%,
+    100% {
+      background-color: var(--gray-100);
+    }
+
+    50% {
+      background-color: var(--gray-200);
+    }
   }
+
   .skeleton {
     animation: pulse-bw 1.4s ease-in-out infinite;
     border-radius: 8px;
@@ -230,6 +271,7 @@ a {
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
   .line-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
@@ -240,14 +282,17 @@ a {
 
 /* ── Reduced Motion ──────────────────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+
   .cursor-blink::after {
     animation: none;
     opacity: 1;
   }
 }
-
